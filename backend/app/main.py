@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 
+from app.routers.produto_routers import router as produto_router
+
 app = FastAPI(
     title="Sistema de Compras Online",
     description="API para gerenciamento de pedidos, produtos, consumidores e vendedores.",
     version="1.0.0",
 )
+
+app.include_router(produto_router)
 
 
 @app.get("/", tags=["Health"])
