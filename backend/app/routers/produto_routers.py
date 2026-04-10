@@ -10,6 +10,14 @@ router = APIRouter(prefix="/produtos", tags=["Produtos"])
 
 @router.post("", response_model=ProdutoRead, status_code=status.HTTP_201_CREATED)
 def criar_produto(payload: ProdutoCreate, db: Session = Depends(get_db)):
+    produto_existente = db.query(Produto).filter(Produto.id_produto == payload.id_produto).first()
+
+    if produto_existente:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esse produto já existe, tente novamente",
+        )
+
     novo_produto = Produto(
         id_produto=payload.id_produto,
         nome_produto=payload.nome_produto,
