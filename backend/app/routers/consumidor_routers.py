@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -92,6 +93,13 @@ def deletar_consumidor(id_consumidor: str, db: Session = Depends(get_db)):
         )
 
     db.delete(consumidor)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Não é possível excluir este consumidor porque existem pedidos associados",
+        )
 
     return None

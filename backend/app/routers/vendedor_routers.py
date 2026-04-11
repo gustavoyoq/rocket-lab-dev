@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -88,6 +89,13 @@ def deletar_vendedor(id_vendedor: str, db: Session = Depends(get_db)):
         )
 
     db.delete(vendedor)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Não é possível excluir este vendedor porque existem itens de pedido associados",
+        )
 
     return None

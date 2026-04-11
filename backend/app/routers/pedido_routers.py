@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -110,6 +111,13 @@ def deletar_pedido(id_pedido: str, db: Session = Depends(get_db)):
         )
 
     db.delete(pedido)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Não é possível excluir este pedido porque existem itens de pedido ou avaliações associadas",
+        )
 
     return None
