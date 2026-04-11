@@ -12,6 +12,7 @@ class Produto(Base):
     id_produto: Mapped[str] = mapped_column(String(32), primary_key=True)
     nome_produto: Mapped[str] = mapped_column(String(255))
     categoria_produto: Mapped[str] = mapped_column(String(100))
+    imagem_url: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True)
     peso_produto_gramas: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     comprimento_centimetros: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     altura_centimetros: Mapped[Optional[float]] = mapped_column(Float, nullable=True)

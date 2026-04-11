@@ -16,6 +16,9 @@ from app.models.produto import Produto
 from app.models.vendedor import Vendedor
 
 
+_imagens_por_categoria: dict[str, str] = {}
+
+
 def _vazio_para_none(valor: str | None) -> str | None:
     if valor is None:
         return None
@@ -63,6 +66,37 @@ def _para_date(valor: str | None) -> date | None:
         return datetime.fromisoformat(processado).date()
 
 
+def _obter_campo(row: dict[str, str], *nomes: str) -> str | None:
+    for nome in nomes:
+        if nome in row:
+            return row.get(nome)
+    return None
+
+
+def _normalizar_categoria(valor: str | None) -> str:
+    if valor is None:
+        return ""
+    return valor.strip().lower()
+
+
+def _carregar_imagens_categoria(data_dir: Path) -> dict[str, str]:
+    arquivo = data_dir / "dim_categoria_imagens.csv"
+    if not arquivo.exists():
+        return {}
+
+    imagens: dict[str, str] = {}
+    with arquivo.open("r", encoding="utf-8", newline="") as csv_file:
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            categoria = _obter_campo(row, "categoria", "Categoria")
+            link = _obter_campo(row, "link", "Link")
+            categoria_normalizada = _normalizar_categoria(categoria)
+            if categoria_normalizada and link:
+                imagens[categoria_normalizada] = link.strip()
+
+    return imagens
+
+
 def _map_consumidor(row: dict[str, str]) -> dict[str, Any]:
     return {
         "id_consumidor": row["id_consumidor"],
@@ -74,10 +108,14 @@ def _map_consumidor(row: dict[str, str]) -> dict[str, Any]:
 
 
 def _map_produto(row: dict[str, str]) -> dict[str, Any]:
+    categoria = row["categoria_produto"]
+    imagem_url = _imagens_por_categoria.get(_normalizar_categoria(categoria))
+
     return {
         "id_produto": row["id_produto"],
         "nome_produto": row["nome_produto"],
-        "categoria_produto": row["categoria_produto"],
+        "categoria_produto": categoria,
+        "imagem_url": imagem_url,
         "peso_produto_gramas": _para_float(row.get("peso_produto_gramas")),
         "comprimento_centimetros": _para_float(row.get("comprimento_centimetros")),
         "altura_centimetros": _para_float(row.get("altura_centimetros")),
@@ -99,11 +137,17 @@ def _map_pedido(row: dict[str, str]) -> dict[str, Any]:
     return {
         "id_pedido": row["id_pedido"],
         "id_consumidor": row["id_consumidor"],
-        "status": row["status_pedido"],
-        "pedido_compra_timestamp": _para_datetime(row.get("timestamp_compra_pedido")),
-        "pedido_entregue_timestamp": _para_datetime(row.get("data_entrega_pedido_consumidor")),
-        "data_estimada_entrega": _para_date(row.get("data_estimada_entrega_pedido")),
-        "tempo_entrega_dias": _para_float(row.get("tempo_entregue_dias")),
+        "status": _obter_campo(row, "status", "status_pedido"),
+        "pedido_compra_timestamp": _para_datetime(
+            _obter_campo(row, "pedido_compra_timestamp", "timestamp_compra_pedido")
+        ),
+        "pedido_entregue_timestamp": _para_datetime(
+            _obter_campo(row, "pedido_entregue_timestamp", "data_entrega_pedido_consumidor")
+        ),
+        "data_estimada_entrega": _para_date(
+            _obter_campo(row, "data_estimada_entrega", "data_estimada_entrega_pedido")
+        ),
+        "tempo_entrega_dias": _para_float(_obter_campo(row, "tempo_entrega_dias", "tempo_entregue_dias")),
         "tempo_entrega_estimado_dias": _para_float(row.get("tempo_entrega_estimado_dias")),
         "diferenca_entrega_dias": _para_float(row.get("diferenca_entrega_dias")),
         "entrega_no_prazo": row.get("entrega_no_prazo"),
@@ -122,9 +166,7 @@ def _map_item_pedido(row: dict[str, str]) -> dict[str, Any]:
 
 
 def _map_avaliacao_pedido(row: dict[str, str]) -> dict[str, Any] | None:
-    nota_bruta = row.get("nota_avaliacao")
-    if nota_bruta is None:
-        nota_bruta = row.get("nota_avaliaco")
+    nota_bruta = _obter_campo(row, "avaliacao", "nota_avaliacao", "nota_avaliaco")
 
     try:
         avaliacao = _para_inteiro(nota_bruta)
@@ -135,10 +177,10 @@ def _map_avaliacao_pedido(row: dict[str, str]) -> dict[str, Any] | None:
         "id_avaliacao": row["id_avaliacao"],
         "id_pedido": row["id_pedido"],
         "avaliacao": avaliacao,
-        "titulo_comentario": row.get("titulo_avaliacao_comentario"),
-        "comentario": row.get("mensagem_avaliacao_comentario"),
-        "data_comentario": _para_datetime(row.get("data_criacao_avaliacao")),
-        "data_resposta": _para_datetime(row.get("data_resposta_avaliacao")),
+        "titulo_comentario": _obter_campo(row, "titulo_comentario", "titulo_avaliacao_comentario"),
+        "comentario": _obter_campo(row, "comentario", "mensagem_avaliacao_comentario"),
+        "data_comentario": _para_datetime(_obter_campo(row, "data_comentario", "data_criacao_avaliacao")),
+        "data_resposta": _para_datetime(_obter_campo(row, "data_resposta", "data_resposta_avaliacao")),
     }
 
 
@@ -168,6 +210,9 @@ TRUNCATE_ORDER = [
 def ingerir_dados_csv(db: Session, data_dir: Path, truncate_before_load: bool = False) -> dict[str, int]:
     if not data_dir.exists():
         raise FileNotFoundError(f"Diretorio de dados nao encontrado: {data_dir}")
+
+    global _imagens_por_categoria
+    _imagens_por_categoria = _carregar_imagens_categoria(data_dir)
 
     if truncate_before_load:
         for model in TRUNCATE_ORDER:

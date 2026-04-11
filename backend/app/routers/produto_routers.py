@@ -23,6 +23,7 @@ def criar_produto(payload: ProdutoCreate, db: Session = Depends(get_db)):
         id_produto=payload.id_produto,
         nome_produto=payload.nome_produto,
         categoria_produto=payload.categoria_produto,
+        imagem_url=payload.imagem_url,
         peso_produto_gramas=payload.peso_produto_gramas,
         comprimento_centimetros=payload.comprimento_centimetros,
         altura_centimetros=payload.altura_centimetros,
