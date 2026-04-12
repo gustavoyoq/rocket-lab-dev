@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useProductDetails } from '../../hooks/useProductDetails'
 import { getCategoryLabel } from '../../lib/category'
@@ -21,7 +21,23 @@ function formatRating(value: number) {
 
 export function ProductDetails() {
   const { productId } = useParams<{ productId: string }>()
-  const { product, reviews, loading, error } = useProductDetails(productId)
+  const { product, reviews, similarProducts, similarLoading, loading, error } = useProductDetails(productId)
+  const sortedSimilarProducts = useMemo(
+    () =>
+      [...similarProducts].sort((left, right) => {
+        if (right.averageRating !== left.averageRating) {
+          return right.averageRating - left.averageRating
+        }
+
+        if (right.reviewCount !== left.reviewCount) {
+          return right.reviewCount - left.reviewCount
+        }
+
+        return left.nome_produto.localeCompare(right.nome_produto, 'pt-BR', { sensitivity: 'base' })
+      }),
+    [similarProducts],
+  )
+  const topSimilarProducts = useMemo(() => sortedSimilarProducts.slice(0, 5), [sortedSimilarProducts])
 
   if (loading) {
     return <StateBox>Carregando detalhes do produto...</StateBox>
@@ -106,6 +122,51 @@ export function ProductDetails() {
               ))}
             </div>
           )}
+      </article>
+
+      <article className="overflow-hidden rounded-4xl bg-[#b5e48c] ring-1 ring-[#99d98c] p-6 lg:p-8">
+        <h3 className="text-xl font-semibold text-slate-900">Produtos similares</h3>
+
+        {similarLoading ? (
+          <div className="mt-4 rounded-2xl border border-dashed border-[#99d98c] bg-[#b5e48c] px-4 py-6 text-sm text-slate-700">
+            Carregando produtos similares...
+          </div>
+        ) : topSimilarProducts.length === 0 ? (
+          <div className="mt-4 rounded-2xl border border-dashed border-[#99d98c] bg-[#b5e48c] px-4 py-6 text-sm text-slate-700">
+            Nenhum produto similar encontrado.
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {topSimilarProducts.map((item) => (
+              <article key={item.id_produto} className="group relative overflow-hidden rounded-3xl border border-[#99d98c] bg-[#b5e48c] transition">
+                <Link to={`/produtos/${item.id_produto}`} className="block">
+                  <div className="h-28 overflow-hidden bg-slate-100">
+                    {item.imagem_url ? (
+                      <img src={item.imagem_url} alt={item.nome_produto} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-linear-to-br from-slate-200 to-slate-100 text-xs font-medium text-slate-500">
+                        Sem imagem
+                      </div>
+                    )}
+                  </div>
+                </Link>
+
+                <Link to={`/produtos/${item.id_produto}`} className="block px-3 py-3 text-left">
+                  <h4 className="h-10 overflow-hidden text-sm font-semibold text-slate-900">{item.nome_produto}</h4>
+                  <div className="mt-2 flex items-end justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs text-slate-500">{getCategoryLabel(item.categoria_produto)}</p>
+                      <p className="mt-1 text-[11px] text-slate-400">{item.salesCount} vendas</p>
+                    </div>
+                    <div className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${item.averageRating > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600'}`}>
+                      {item.averageRating > 0 ? `★ ${formatRating(item.averageRating)}` : formatRating(item.averageRating)}
+                    </div>
+                  </div>
+                </Link>
+              </article>
+            ))}
+          </div>
+        )}
       </article>
     </section>
   )

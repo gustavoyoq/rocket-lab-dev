@@ -12,6 +12,10 @@ export function DeleteProductDialog({ productName, onClose, onDelete }: DeletePr
     <Modal
       title="Deletar produto"
       onClose={onClose}
+      contentClassName="bg-[#E7F4B9]"
+      headerClassName="border-b-0"
+      bodyClassName="pt-2"
+      actionsClassName="border-t-0"
       actions={
         <>
           <Button variant="secondary" onClick={onClose} type="button">
@@ -23,7 +27,7 @@ export function DeleteProductDialog({ productName, onClose, onDelete }: DeletePr
         </>
       }
     >
-      <p className="text-sm text-slate-700">Você quer mesmo deletar o produto <strong>{productName}</strong>?</p>
+      <p className="text-base text-slate-700">Você quer mesmo deletar o produto <strong>{productName}</strong>?</p>
     </Modal>
   )
 }

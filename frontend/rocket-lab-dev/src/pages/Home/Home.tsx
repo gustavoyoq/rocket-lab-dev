@@ -14,6 +14,8 @@ const PAGE_SIZE = 24
 export function Home() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
+  const [ratingSort, setRatingSort] = useState<'none' | 'asc' | 'desc'>('none')
+  const [salesSort, setSalesSort] = useState<'none' | 'asc' | 'desc'>('none')
   const [currentPage, setCurrentPage] = useState(1)
   const {
     products,
@@ -31,6 +33,8 @@ export function Home() {
     pageSize: PAGE_SIZE,
     search,
     category,
+    ratingSort,
+    salesSort,
   })
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<ProductListingItem | null>(null)
@@ -49,6 +53,16 @@ export function Home() {
 
   function handleCategoryChange(value: string) {
     setCategory(value)
+    setCurrentPage(1)
+  }
+
+  function handleRatingSortChange(value: 'none' | 'asc' | 'desc') {
+    setRatingSort(value)
+    setCurrentPage(1)
+  }
+
+  function handleSalesSortChange(value: 'none' | 'asc' | 'desc') {
+    setSalesSort(value)
     setCurrentPage(1)
   }
 
@@ -78,7 +92,7 @@ export function Home() {
   return (
     <section className="space-y-6">
       <div className="space-y-2 pt-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#6b8f4a]">Catálogo PackIt</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#6b8f4a]">Catálogo Pack-It</p>
         <h2 className="text-3xl font-semibold text-slate-900">Produtos em destaque</h2>
         <p className="max-w-3xl text-sm text-slate-600">
           Navegue, filtre, edite e acompanhe métricas dos produtos do catálogo.
@@ -88,9 +102,13 @@ export function Home() {
       <ProductToolbar
         search={search}
         category={category}
+        ratingSort={ratingSort}
+        salesSort={salesSort}
         categories={categories}
         onSearchChange={handleSearchChange}
         onCategoryChange={handleCategoryChange}
+        onRatingSortChange={handleRatingSortChange}
+        onSalesSortChange={handleSalesSortChange}
         onAddProduct={() => setIsCreateOpen(true)}
       />
 

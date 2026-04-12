@@ -52,9 +52,11 @@ interface UseProductsParams {
   pageSize: number
   search: string
   category: string
+  ratingSort: 'none' | 'asc' | 'desc'
+  salesSort: 'none' | 'asc' | 'desc'
 }
 
-export function useProducts({ page, pageSize, search, category }: UseProductsParams) {
+export function useProducts({ page, pageSize, search, category, ratingSort, salesSort }: UseProductsParams) {
   const [products, setProducts] = useState<ProductListingItem[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [totalPages, setTotalPages] = useState(1)
@@ -68,7 +70,7 @@ export function useProducts({ page, pageSize, search, category }: UseProductsPar
 
     try {
       const [productsPage, categoryList] = await Promise.all([
-        listProducts({ page, pageSize, search, category }),
+        listProducts({ page, pageSize, search, category, ratingSort, salesSort }),
         listProductCategories(),
       ])
 
@@ -85,7 +87,7 @@ export function useProducts({ page, pageSize, search, category }: UseProductsPar
 
   useEffect(() => {
     void loadProducts()
-  }, [page, pageSize, search, category])
+  }, [page, pageSize, search, category, ratingSort, salesSort])
 
   async function handleCreate(values: ProductFormValues) {
     const payload = formValuesToPayload(crypto.randomUUID().replace(/-/g, '').slice(0, 32), values)

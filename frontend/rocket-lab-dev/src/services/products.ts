@@ -15,6 +15,8 @@ interface ListProductsParams {
   pageSize: number
   search?: string
   category?: string
+  ratingSort?: 'none' | 'asc' | 'desc'
+  salesSort?: 'none' | 'asc' | 'desc'
 }
 
 export async function listProducts(params: ListProductsParams): Promise<ProductPaginationResponse> {
@@ -24,6 +26,8 @@ export async function listProducts(params: ListProductsParams): Promise<ProductP
       page_size: params.pageSize,
       search: params.search?.trim() || undefined,
       categoria: params.category && params.category !== 'all' ? params.category : undefined,
+      sort_rating: params.ratingSort,
+      sort_sales: params.salesSort,
     },
   })
 
