@@ -22,16 +22,16 @@ router = APIRouter(prefix="/produtos", tags=["Produtos"])
 
 
 @router.post("", response_model=ProdutoRead, status_code=status.HTTP_201_CREATED)
-def criar_produto(payload: ProdutoCreate, db: Session = Depends(get_db)):
-    produto_existente = db.query(Produto).filter(Produto.id_produto == payload.id_produto).first()
+def create_product(payload: ProdutoCreate, db: Session = Depends(get_db)):
+    existing_product = db.query(Produto).filter(Produto.id_produto == payload.id_produto).first()
 
-    if produto_existente:
+    if existing_product:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Esse produto já existe, tente novamente",
         )
 
-    novo_produto = Produto(
+    new_product = Produto(
         id_produto=payload.id_produto,
         nome_produto=payload.nome_produto,
         categoria_produto=payload.categoria_produto,
@@ -42,15 +42,15 @@ def criar_produto(payload: ProdutoCreate, db: Session = Depends(get_db)):
         largura_centimetros=payload.largura_centimetros,
     )
 
-    db.add(novo_produto)
+    db.add(new_product)
     db.commit()
-    db.refresh(novo_produto)
+    db.refresh(new_product)
 
-    return novo_produto
+    return new_product
 
 
 @router.get("", response_model=ProdutoPaginatedRead)
-def listar_produtos(
+def list_products(
     page: int = Query(1, ge=1),
     page_size: int = Query(24, ge=1, le=100),
     search: str | None = Query(None),
@@ -162,16 +162,16 @@ def listar_produtos(
 
 
 @router.get("/categorias", response_model=list[str])
-def listar_categorias_produto(db: Session = Depends(get_db)):
-    categorias_raw = db.query(Produto.categoria_produto).distinct().all()
-    return [categoria[0] for categoria in categorias_raw if categoria[0] is not None]
+def list_product_categories(db: Session = Depends(get_db)):
+    raw_categories = db.query(Produto.categoria_produto).distinct().all()
+    return [category[0] for category in raw_categories if category[0] is not None]
 
 
 @router.get("/{id_produto}/detalhes", response_model=ProdutoDetalhesRead)
-def buscar_produto_detalhes(id_produto: str, db: Session = Depends(get_db)):
-    produto = db.query(Produto).filter(Produto.id_produto == id_produto).first()
+def get_product_details(id_produto: str, db: Session = Depends(get_db)):
+    product = db.query(Produto).filter(Produto.id_produto == id_produto).first()
 
-    if not produto:
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Produto não encontrado",
@@ -201,14 +201,14 @@ def buscar_produto_detalhes(id_produto: str, db: Session = Depends(get_db)):
     )
 
     return {
-        "id_produto": produto.id_produto,
-        "nome_produto": produto.nome_produto,
-        "categoria_produto": produto.categoria_produto,
-        "imagem_url": produto.imagem_url,
-        "peso_produto_gramas": produto.peso_produto_gramas,
-        "comprimento_centimetros": produto.comprimento_centimetros,
-        "altura_centimetros": produto.altura_centimetros,
-        "largura_centimetros": produto.largura_centimetros,
+        "id_produto": product.id_produto,
+        "nome_produto": product.nome_produto,
+        "categoria_produto": product.categoria_produto,
+        "imagem_url": product.imagem_url,
+        "peso_produto_gramas": product.peso_produto_gramas,
+        "comprimento_centimetros": product.comprimento_centimetros,
+        "altura_centimetros": product.altura_centimetros,
+        "largura_centimetros": product.largura_centimetros,
         "sales_count": int(sales_count or 0),
         "average_rating": float(average_rating or 0.0),
         "review_count": int(review_count or 0),
@@ -216,14 +216,14 @@ def buscar_produto_detalhes(id_produto: str, db: Session = Depends(get_db)):
 
 
 @router.get("/{id_produto}/avaliacoes", response_model=ProdutoAvaliacoesPaginatedRead)
-def listar_avaliacoes_produto(
+def list_product_reviews(
     id_produto: str,
     page: int = Query(1, ge=1),
     page_size: int = Query(30, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    produto_existe = db.query(Produto.id_produto).filter(Produto.id_produto == id_produto).first()
-    if not produto_existe:
+    product_exists = db.query(Produto.id_produto).filter(Produto.id_produto == id_produto).first()
+    if not product_exists:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Produto não encontrado",
@@ -261,55 +261,55 @@ def listar_avaliacoes_produto(
 
 
 @router.get("/{id_produto}", response_model=ProdutoRead)
-def buscar_produto_por_id(id_produto: str, db: Session = Depends(get_db)):
-    produto = db.query(Produto).filter(Produto.id_produto == id_produto).first()
+def get_product_by_id(id_produto: str, db: Session = Depends(get_db)):
+    product = db.query(Produto).filter(Produto.id_produto == id_produto).first()
 
-    if not produto:
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Produto não encontrado",
         )
 
-    return produto
+    return product
 
 
 @router.patch("/{id_produto}", response_model=ProdutoRead)
-def atualizar_produto(
+def update_product(
     id_produto: str,
     payload: ProdutoUpdate,
     db: Session = Depends(get_db),
 ):
-    produto = db.query(Produto).filter(Produto.id_produto == id_produto).first()
+    product = db.query(Produto).filter(Produto.id_produto == id_produto).first()
 
-    if not produto:
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Produto não encontrado",
         )
 
-    dados_atualizacao = payload.model_dump(exclude_unset=True)
+    update_data = payload.model_dump(exclude_unset=True)
 
-    for campo, valor in dados_atualizacao.items():
-        setattr(produto, campo, valor)
+    for field, value in update_data.items():
+        setattr(product, field, value)
 
     db.commit()
-    db.refresh(produto)
+    db.refresh(product)
 
-    return produto
+    return product
 
 
 @router.delete("/{id_produto}", status_code=status.HTTP_204_NO_CONTENT)
-def deletar_produto(id_produto: str, db: Session = Depends(get_db)):
-    produto = db.query(Produto).filter(Produto.id_produto == id_produto).first()
+def delete_product(id_produto: str, db: Session = Depends(get_db)):
+    product = db.query(Produto).filter(Produto.id_produto == id_produto).first()
 
-    if not produto:
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Produto não encontrado",
         )
 
     db.query(ItemPedido).filter(ItemPedido.id_produto == id_produto).delete(synchronize_session=False)
-    db.delete(produto)
+    db.delete(product)
     try:
         db.commit()
     except IntegrityError:

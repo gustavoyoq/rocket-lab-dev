@@ -10,16 +10,16 @@ router = APIRouter(prefix="/vendedores", tags=["Vendedores"])
 
 
 @router.post("", response_model=VendedorRead, status_code=status.HTTP_201_CREATED)
-def criar_vendedor(payload: VendedorCreate, db: Session = Depends(get_db)):
-    vendedor_existente = db.query(Vendedor).filter(Vendedor.id_vendedor == payload.id_vendedor).first()
+def create_seller(payload: VendedorCreate, db: Session = Depends(get_db)):
+    existing_seller = db.query(Vendedor).filter(Vendedor.id_vendedor == payload.id_vendedor).first()
 
-    if vendedor_existente:
+    if existing_seller:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Ocorreu um erro na criação de vendedor (ID), tente novamente",
         )
 
-    novo_vendedor = Vendedor(
+    new_seller = Vendedor(
         id_vendedor=payload.id_vendedor,
         nome_vendedor=payload.nome_vendedor,
         prefixo_cep=payload.prefixo_cep,
@@ -27,68 +27,68 @@ def criar_vendedor(payload: VendedorCreate, db: Session = Depends(get_db)):
         estado=payload.estado,
     )
 
-    db.add(novo_vendedor)
+    db.add(new_seller)
     db.commit()
-    db.refresh(novo_vendedor)
+    db.refresh(new_seller)
 
-    return novo_vendedor
+    return new_seller
 
 
 @router.get("", response_model=list[VendedorRead])
-def listar_vendedores(db: Session = Depends(get_db)):
-    vendedores = db.query(Vendedor).all()
-    return vendedores
+def list_sellers(db: Session = Depends(get_db)):
+    sellers = db.query(Vendedor).all()
+    return sellers
 
 
 @router.get("/{id_vendedor}", response_model=VendedorRead)
-def buscar_vendedor_por_id(id_vendedor: str, db: Session = Depends(get_db)):
-    vendedor = db.query(Vendedor).filter(Vendedor.id_vendedor == id_vendedor).first()
+def get_seller_by_id(id_vendedor: str, db: Session = Depends(get_db)):
+    seller = db.query(Vendedor).filter(Vendedor.id_vendedor == id_vendedor).first()
 
-    if not vendedor:
+    if not seller:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Vendedor não encontrado",
         )
 
-    return vendedor
+    return seller
 
 
 @router.patch("/{id_vendedor}", response_model=VendedorRead)
-def atualizar_vendedor(
+def update_seller(
     id_vendedor: str,
     payload: VendedorUpdate,
     db: Session = Depends(get_db),
 ):
-    vendedor = db.query(Vendedor).filter(Vendedor.id_vendedor == id_vendedor).first()
+    seller = db.query(Vendedor).filter(Vendedor.id_vendedor == id_vendedor).first()
 
-    if not vendedor:
+    if not seller:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Vendedor não encontrado",
         )
 
-    dados_atualizacao = payload.model_dump(exclude_unset=True)
+    update_data = payload.model_dump(exclude_unset=True)
 
-    for campo, valor in dados_atualizacao.items():
-        setattr(vendedor, campo, valor)
+    for field, value in update_data.items():
+        setattr(seller, field, value)
 
     db.commit()
-    db.refresh(vendedor)
+    db.refresh(seller)
 
-    return vendedor
+    return seller
 
 
 @router.delete("/{id_vendedor}", status_code=status.HTTP_204_NO_CONTENT)
-def deletar_vendedor(id_vendedor: str, db: Session = Depends(get_db)):
-    vendedor = db.query(Vendedor).filter(Vendedor.id_vendedor == id_vendedor).first()
+def delete_seller(id_vendedor: str, db: Session = Depends(get_db)):
+    seller = db.query(Vendedor).filter(Vendedor.id_vendedor == id_vendedor).first()
 
-    if not vendedor:
+    if not seller:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Vendedor não encontrado",
         )
 
-    db.delete(vendedor)
+    db.delete(seller)
     try:
         db.commit()
     except IntegrityError:

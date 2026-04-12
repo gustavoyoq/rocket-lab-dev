@@ -13,29 +13,29 @@ router = APIRouter(prefix="/itens-pedidos", tags=["ItensPedidos"])
 
 
 @router.post("", response_model=ItemPedidoRead, status_code=status.HTTP_201_CREATED)
-def criar_item_pedido(payload: ItemPedidoCreate, db: Session = Depends(get_db)):
-    pedido = db.query(Pedido).filter(Pedido.id_pedido == payload.id_pedido).first()
-    if not pedido:
+def create_order_item(payload: ItemPedidoCreate, db: Session = Depends(get_db)):
+    order = db.query(Pedido).filter(Pedido.id_pedido == payload.id_pedido).first()
+    if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Pedido não encontrado para associar ao item",
         )
 
-    produto = db.query(Produto).filter(Produto.id_produto == payload.id_produto).first()
-    if not produto:
+    product = db.query(Produto).filter(Produto.id_produto == payload.id_produto).first()
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Produto não encontrado para associar ao item",
         )
 
-    vendedor = db.query(Vendedor).filter(Vendedor.id_vendedor == payload.id_vendedor).first()
-    if not vendedor:
+    seller = db.query(Vendedor).filter(Vendedor.id_vendedor == payload.id_vendedor).first()
+    if not seller:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Vendedor não encontrado para associar ao item",
         )
 
-    novo_item = ItemPedido(
+    new_item = ItemPedido(
         id_pedido=payload.id_pedido,
         id_item=payload.id_item,
         id_produto=payload.id_produto,
@@ -44,7 +44,7 @@ def criar_item_pedido(payload: ItemPedidoCreate, db: Session = Depends(get_db)):
         preco_frete=payload.preco_frete,
     )
 
-    db.add(novo_item)
+    db.add(new_item)
     try:
         db.commit()
     except IntegrityError:
@@ -53,19 +53,19 @@ def criar_item_pedido(payload: ItemPedidoCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT,
             detail="Ocorreu um erro na criação do item de pedido, verifique os identificadores informados",
         )
-    db.refresh(novo_item)
+    db.refresh(new_item)
 
-    return novo_item
+    return new_item
 
 
 @router.get("", response_model=list[ItemPedidoRead])
-def listar_itens_pedidos(db: Session = Depends(get_db)):
-    itens = db.query(ItemPedido).all()
-    return itens
+def list_order_items(db: Session = Depends(get_db)):
+    items = db.query(ItemPedido).all()
+    return items
 
 
 @router.get("/{id_pedido}/{id_item}", response_model=ItemPedidoRead)
-def buscar_item_pedido_por_id(id_pedido: str, id_item: int, db: Session = Depends(get_db)):
+def get_order_item_by_id(id_pedido: str, id_item: int, db: Session = Depends(get_db)):
     item = db.query(ItemPedido).filter(
         ItemPedido.id_pedido == id_pedido,
         ItemPedido.id_item == id_item,
@@ -81,7 +81,7 @@ def buscar_item_pedido_por_id(id_pedido: str, id_item: int, db: Session = Depend
 
 
 @router.patch("/{id_pedido}/{id_item}", response_model=ItemPedidoRead)
-def atualizar_item_pedido(
+def update_order_item(
     id_pedido: str,
     id_item: int,
     payload: ItemPedidoUpdate,
@@ -98,26 +98,26 @@ def atualizar_item_pedido(
             detail="Item de pedido não encontrado",
         )
 
-    dados_atualizacao = payload.model_dump(exclude_unset=True)
+    update_data = payload.model_dump(exclude_unset=True)
 
-    if "id_produto" in dados_atualizacao:
-        produto = db.query(Produto).filter(Produto.id_produto == dados_atualizacao["id_produto"]).first()
-        if not produto:
+    if "id_produto" in update_data:
+        product = db.query(Produto).filter(Produto.id_produto == update_data["id_produto"]).first()
+        if not product:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Produto não encontrado para associar ao item",
             )
 
-    if "id_vendedor" in dados_atualizacao:
-        vendedor = db.query(Vendedor).filter(Vendedor.id_vendedor == dados_atualizacao["id_vendedor"]).first()
-        if not vendedor:
+    if "id_vendedor" in update_data:
+        seller = db.query(Vendedor).filter(Vendedor.id_vendedor == update_data["id_vendedor"]).first()
+        if not seller:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Vendedor não encontrado para associar ao item",
             )
 
-    for campo, valor in dados_atualizacao.items():
-        setattr(item, campo, valor)
+    for field, value in update_data.items():
+        setattr(item, field, value)
 
     db.commit()
     db.refresh(item)
@@ -126,7 +126,7 @@ def atualizar_item_pedido(
 
 
 @router.delete("/{id_pedido}/{id_item}", status_code=status.HTTP_204_NO_CONTENT)
-def deletar_item_pedido(id_pedido: str, id_item: int, db: Session = Depends(get_db)):
+def delete_order_item(id_pedido: str, id_item: int, db: Session = Depends(get_db)):
     item = db.query(ItemPedido).filter(
         ItemPedido.id_pedido == id_pedido,
         ItemPedido.id_item == id_item,

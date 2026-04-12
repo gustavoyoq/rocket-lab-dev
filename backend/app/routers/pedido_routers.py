@@ -11,22 +11,22 @@ router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
 
 
 @router.post("", response_model=PedidoRead, status_code=status.HTTP_201_CREATED)
-def criar_pedido(payload: PedidoCreate, db: Session = Depends(get_db)):
-    pedido_existente = db.query(Pedido).filter(Pedido.id_pedido == payload.id_pedido).first()
-    if pedido_existente:
+def create_order(payload: PedidoCreate, db: Session = Depends(get_db)):
+    existing_order = db.query(Pedido).filter(Pedido.id_pedido == payload.id_pedido).first()
+    if existing_order:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Ocorreu um erro na criação de pedido (ID), tente novamente",
         )
 
-    consumidor = db.query(Consumidor).filter(Consumidor.id_consumidor == payload.id_consumidor).first()
-    if not consumidor:
+    consumer = db.query(Consumidor).filter(Consumidor.id_consumidor == payload.id_consumidor).first()
+    if not consumer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Consumidor não encontrado para associar ao pedido",
         )
 
-    novo_pedido = Pedido(
+    new_order = Pedido(
         id_pedido=payload.id_pedido,
         id_consumidor=payload.id_consumidor,
         status=payload.status,
@@ -39,78 +39,78 @@ def criar_pedido(payload: PedidoCreate, db: Session = Depends(get_db)):
         entrega_no_prazo=payload.entrega_no_prazo,
     )
 
-    db.add(novo_pedido)
+    db.add(new_order)
     db.commit()
-    db.refresh(novo_pedido)
+    db.refresh(new_order)
 
-    return novo_pedido
+    return new_order
 
 
 @router.get("", response_model=list[PedidoRead])
-def listar_pedidos(db: Session = Depends(get_db)):
-    pedidos = db.query(Pedido).all()
-    return pedidos
+def list_orders(db: Session = Depends(get_db)):
+    orders = db.query(Pedido).all()
+    return orders
 
 
 @router.get("/{id_pedido}", response_model=PedidoRead)
-def buscar_pedido_por_id(id_pedido: str, db: Session = Depends(get_db)):
-    pedido = db.query(Pedido).filter(Pedido.id_pedido == id_pedido).first()
+def get_order_by_id(id_pedido: str, db: Session = Depends(get_db)):
+    order = db.query(Pedido).filter(Pedido.id_pedido == id_pedido).first()
 
-    if not pedido:
+    if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Pedido não encontrado",
         )
 
-    return pedido
+    return order
 
 
 @router.patch("/{id_pedido}", response_model=PedidoRead)
-def atualizar_pedido(
+def update_order(
     id_pedido: str,
     payload: PedidoUpdate,
     db: Session = Depends(get_db),
 ):
-    pedido = db.query(Pedido).filter(Pedido.id_pedido == id_pedido).first()
+    order = db.query(Pedido).filter(Pedido.id_pedido == id_pedido).first()
 
-    if not pedido:
+    if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Pedido não encontrado",
         )
 
-    dados_atualizacao = payload.model_dump(exclude_unset=True)
+    update_data = payload.model_dump(exclude_unset=True)
 
-    if "id_consumidor" in dados_atualizacao:
-        consumidor = db.query(Consumidor).filter(
-            Consumidor.id_consumidor == dados_atualizacao["id_consumidor"]
+    if "id_consumidor" in update_data:
+        consumer = db.query(Consumidor).filter(
+            Consumidor.id_consumidor == update_data["id_consumidor"]
         ).first()
-        if not consumidor:
+        if not consumer:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Consumidor não encontrado para associar ao pedido",
             )
 
-    for campo, valor in dados_atualizacao.items():
-        setattr(pedido, campo, valor)
+    for field, value in update_data.items():
+        setattr(order, field, value)
 
     db.commit()
-    db.refresh(pedido)
+    db.refresh(order)
 
-    return pedido
+    return order
 
 
 @router.delete("/{id_pedido}", status_code=status.HTTP_204_NO_CONTENT)
-def deletar_pedido(id_pedido: str, db: Session = Depends(get_db)):
-    pedido = db.query(Pedido).filter(Pedido.id_pedido == id_pedido).first()
+def delete_order(id_pedido: str, db: Session = Depends(get_db)):
+    order = db.query(Pedido).filter(Pedido.id_pedido == id_pedido).first()
 
-    if not pedido:
+    if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Pedido não encontrado",
         )
 
-    db.delete(pedido)
+    db.delete(order)
     try:
         db.commit()
     except IntegrityError:

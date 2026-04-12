@@ -14,16 +14,16 @@ router = APIRouter(prefix="/consumidores", tags=["Consumidores"])
 
 
 @router.post("", response_model=ConsumidorRead, status_code=status.HTTP_201_CREATED)
-def criar_consumidor(payload: ConsumidorCreate, db: Session = Depends(get_db)):
-    consumidor_existente = db.query(Consumidor).filter(Consumidor.id_consumidor == payload.id_consumidor).first()
+def create_consumer(payload: ConsumidorCreate, db: Session = Depends(get_db)):
+    existing_consumer = db.query(Consumidor).filter(Consumidor.id_consumidor == payload.id_consumidor).first()
 
-    if consumidor_existente:
+    if existing_consumer:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Ocorreu um erro na criação de consumidor (ID), tente novamente",
         )
 
-    novo_consumidor = Consumidor(
+    new_consumer = Consumidor(
         id_consumidor=payload.id_consumidor,
         prefixo_cep=payload.prefixo_cep,
         nome_consumidor=payload.nome_consumidor,
@@ -31,68 +31,68 @@ def criar_consumidor(payload: ConsumidorCreate, db: Session = Depends(get_db)):
         estado=payload.estado,
     )
 
-    db.add(novo_consumidor)
+    db.add(new_consumer)
     db.commit()
-    db.refresh(novo_consumidor)
+    db.refresh(new_consumer)
 
-    return novo_consumidor
+    return new_consumer
 
 
 @router.get("", response_model=list[ConsumidorRead])
-def listar_consumidores(db: Session = Depends(get_db)):
-    consumidores = db.query(Consumidor).all()
-    return consumidores
+def list_consumers(db: Session = Depends(get_db)):
+    consumers = db.query(Consumidor).all()
+    return consumers
 
 
 @router.get("/{id_consumidor}", response_model=ConsumidorRead)
-def buscar_consumidor_por_id(id_consumidor: str, db: Session = Depends(get_db)):
-    consumidor = db.query(Consumidor).filter(Consumidor.id_consumidor == id_consumidor).first()
+def get_consumer_by_id(id_consumidor: str, db: Session = Depends(get_db)):
+    consumer = db.query(Consumidor).filter(Consumidor.id_consumidor == id_consumidor).first()
 
-    if not consumidor:
+    if not consumer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Consumidor não encontrado",
         )
 
-    return consumidor
+    return consumer
 
 
 @router.patch("/{id_consumidor}", response_model=ConsumidorRead)
-def atualizar_consumidor(
+def update_consumer(
     id_consumidor: str,
     payload: ConsumidorUpdate,
     db: Session = Depends(get_db),
 ):
-    consumidor = db.query(Consumidor).filter(Consumidor.id_consumidor == id_consumidor).first()
+    consumer = db.query(Consumidor).filter(Consumidor.id_consumidor == id_consumidor).first()
 
-    if not consumidor:
+    if not consumer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Consumidor não encontrado",
         )
 
-    dados_atualizacao = payload.model_dump(exclude_unset=True)
+    update_data = payload.model_dump(exclude_unset=True)
 
-    for campo, valor in dados_atualizacao.items():
-        setattr(consumidor, campo, valor)
+    for field, value in update_data.items():
+        setattr(consumer, field, value)
 
     db.commit()
-    db.refresh(consumidor)
+    db.refresh(consumer)
 
-    return consumidor
+    return consumer
 
 
 @router.delete("/{id_consumidor}", status_code=status.HTTP_204_NO_CONTENT)
-def deletar_consumidor(id_consumidor: str, db: Session = Depends(get_db)):
-    consumidor = db.query(Consumidor).filter(Consumidor.id_consumidor == id_consumidor).first()
+def delete_consumer(id_consumidor: str, db: Session = Depends(get_db)):
+    consumer = db.query(Consumidor).filter(Consumidor.id_consumidor == id_consumidor).first()
 
-    if not consumidor:
+    if not consumer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Consumidor não encontrado",
         )
 
-    db.delete(consumidor)
+    db.delete(consumer)
     try:
         db.commit()
     except IntegrityError:

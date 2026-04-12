@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers.avaliacao_pedido_routers import router as avaliacao_pedido_router
-from app.routers.consumidor_routers import router as consumidor_router
-from app.routers.item_pedido_routers import router as item_pedido_router
-from app.routers.pedido_routers import router as pedido_router
-from app.routers.produto_routers import router as produto_router
-from app.routers.vendedor_routers import router as vendedor_router
+from app.routers.avaliacao_pedido_routers import router as order_review_router
+from app.routers.consumidor_routers import router as consumer_router
+from app.routers.item_pedido_routers import router as order_item_router
+from app.routers.pedido_routers import router as order_router
+from app.routers.produto_routers import router as product_router
+from app.routers.vendedor_routers import router as seller_router
 
 app = FastAPI(
     title="Sistema de Compras Online",
@@ -22,12 +22,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(produto_router)
-app.include_router(vendedor_router)
-app.include_router(consumidor_router)
-app.include_router(pedido_router)
-app.include_router(avaliacao_pedido_router)
-app.include_router(item_pedido_router)
+app.include_router(product_router)
+app.include_router(seller_router)
+app.include_router(consumer_router)
+app.include_router(order_router)
+app.include_router(order_review_router)
+app.include_router(order_item_router)
 
 
 @app.get("/", tags=["Health"])
