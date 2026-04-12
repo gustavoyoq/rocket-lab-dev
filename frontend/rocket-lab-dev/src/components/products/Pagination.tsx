@@ -49,7 +49,7 @@ export function Pagination({ currentPage, totalPages, onPrevious, onNext, onGoTo
           type="button"
           onClick={() => setIsPagePickerOpen((current) => !current)}
           aria-label="Abrir seletor de página"
-          className="min-w-12 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+          className="min-w-12 rounded-full bg-[#b5e48c] px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-[#99d98c] transition hover:bg-[#99d98c]"
         >
           {currentPage} / {totalPages}
         </button>
@@ -61,7 +61,7 @@ export function Pagination({ currentPage, totalPages, onPrevious, onNext, onGoTo
       {isPagePickerOpen ? (
         <form
           onSubmit={handleSubmit}
-          className="mx-auto flex max-w-md flex-col gap-3 rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:items-center"
+          className="mx-auto flex max-w-md flex-col gap-3 rounded-3xl bg-[#b5e48c] px-4 py-4 ring-1 ring-[#99d98c] sm:flex-row sm:items-center"
         >
           <label className="flex-1 text-sm font-medium text-slate-700">
             Ir para página

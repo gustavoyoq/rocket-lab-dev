@@ -167,8 +167,8 @@ export function Home() {
 function StateBox({ children, variant = 'default' }: { children: ReactNode; variant?: 'default' | 'error' }) {
   return (
     <div
-      className={`flex min-h-56 flex-col items-center justify-center gap-4 rounded-3xl border px-6 py-10 text-center shadow-sm ${
-        variant === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white text-slate-700'
+      className={`flex min-h-56 flex-col items-center justify-center gap-4 rounded-3xl border px-6 py-10 text-center ${
+        variant === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-[#99d98c] bg-[#b5e48c] text-slate-800'
       }`}
     >
       {children}

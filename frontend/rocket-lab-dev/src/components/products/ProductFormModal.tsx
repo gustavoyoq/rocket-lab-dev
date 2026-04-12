@@ -4,6 +4,7 @@ import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Modal } from '../ui/Modal'
 import { Select } from '../ui/Select'
+import { getCategoryLabel } from '../../lib/category'
 
 interface ProductFormModalProps {
   title: string
@@ -69,7 +70,7 @@ export function ProductFormModal({
             <option value="">Selecione uma categoria</option>
             {categories.map((category) => (
               <option key={category} value={category}>
-                {category}
+                {getCategoryLabel(category)}
               </option>
             ))}
           </Select>

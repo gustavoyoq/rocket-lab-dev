@@ -5,4 +5,9 @@ export function getCategoryLabel(category: string | null | undefined): string {
   }
 
   return normalized
+    .replace(/[_-]+/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
 }

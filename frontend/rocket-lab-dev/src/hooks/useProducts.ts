@@ -2,6 +2,17 @@ import { useEffect, useState } from 'react'
 import { createProduct, deleteProduct, listProductCategories, listProducts, updateProduct } from '../services/products'
 import type { ProductFormValues, ProductInput, ProductListingItem } from '../types/product'
 
+function extractErrorMessage(error: unknown, fallback: string) {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const responseData = (error as { response?: { data?: { detail?: string } } }).response?.data
+    if (responseData?.detail) {
+      return responseData.detail
+    }
+  }
+
+  return fallback
+}
+
 function isNumeric(value: string): number | null {
   if (value.trim() === '') {
     return null
@@ -89,8 +100,12 @@ export function useProducts({ page, pageSize, search, category }: UseProductsPar
   }
 
   async function handleDelete(productId: string) {
-    await deleteProduct(productId)
-    await loadProducts()
+    try {
+      await deleteProduct(productId)
+      await loadProducts()
+    } catch (error) {
+      setError(extractErrorMessage(error, 'Nao foi possivel excluir o produto no momento.'))
+    }
   }
 
   return {
