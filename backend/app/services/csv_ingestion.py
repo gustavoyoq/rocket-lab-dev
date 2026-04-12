@@ -108,7 +108,10 @@ def _map_consumidor(row: dict[str, str]) -> dict[str, Any]:
 
 
 def _map_produto(row: dict[str, str]) -> dict[str, Any]:
-    categoria = row["categoria_produto"]
+    categoria = (row.get("categoria_produto") or "").strip()
+    if categoria == "":
+        categoria = "sem_categoria"
+
     imagem_url = _imagens_por_categoria.get(_normalizar_categoria(categoria))
 
     return {

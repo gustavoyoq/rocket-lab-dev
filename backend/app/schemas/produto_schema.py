@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -29,5 +30,46 @@ class ProdutoUpdate(BaseModel):
 
 class ProdutoRead(ProdutoBase):
     id_produto: str = Field(..., min_length=1, max_length=32)
+    categoria_produto: str = Field(..., min_length=0, max_length=100)
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProdutoListItemRead(ProdutoRead):
+    sales_count: int = Field(..., ge=0)
+    average_rating: float = Field(..., ge=0)
+    review_count: int = Field(..., ge=0)
+
+
+class ProdutoPaginatedRead(BaseModel):
+    items: list[ProdutoListItemRead]
+    page: int = Field(..., ge=1)
+    page_size: int = Field(..., ge=1)
+    total_items: int = Field(..., ge=0)
+    total_pages: int = Field(..., ge=1)
+
+
+class ProdutoDetalhesRead(ProdutoRead):
+    sales_count: int = Field(..., ge=0)
+    average_rating: float = Field(..., ge=0)
+    review_count: int = Field(..., ge=0)
+
+
+class ProdutoAvaliacaoItemRead(BaseModel):
+    id_avaliacao: str = Field(..., min_length=1, max_length=32)
+    id_pedido: str = Field(..., min_length=1, max_length=32)
+    avaliacao: int = Field(..., ge=1, le=5)
+    titulo_comentario: Optional[str] = Field(None, min_length=1, max_length=255)
+    comentario: Optional[str] = Field(None, min_length=1, max_length=1000)
+    data_comentario: Optional[datetime] = None
+    data_resposta: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProdutoAvaliacoesPaginatedRead(BaseModel):
+    items: list[ProdutoAvaliacaoItemRead]
+    page: int = Field(..., ge=1)
+    page_size: int = Field(..., ge=1)
+    total_items: int = Field(..., ge=0)
+    total_pages: int = Field(..., ge=1)
