@@ -2,7 +2,7 @@ from math import ceil
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, asc, desc
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -55,6 +55,8 @@ def listar_produtos(
     page_size: int = Query(24, ge=1, le=100),
     search: str | None = Query(None),
     categoria: str | None = Query(None),
+    sort_rating: str = Query("desc", pattern="^(none|asc|desc)$"),
+    sort_sales: str = Query("none", pattern="^(none|asc|desc)$"),
     db: Session = Depends(get_db),
 ):
     sales_subquery = (
@@ -104,12 +106,16 @@ def listar_produtos(
     if page > total_pages:
         page = total_pages
 
+    sales_count_expr = func.coalesce(sales_subquery.c.sales_count, 0)
+    average_rating_expr = func.coalesce(reviews_subquery.c.average_rating, 0.0)
+    review_count_expr = func.coalesce(reviews_subquery.c.review_count, 0)
+
     paged_query = (
         db.query(
             Produto,
-            func.coalesce(sales_subquery.c.sales_count, 0).label("sales_count"),
-            func.coalesce(reviews_subquery.c.average_rating, 0.0).label("average_rating"),
-            func.coalesce(reviews_subquery.c.review_count, 0).label("review_count"),
+            sales_count_expr.label("sales_count"),
+            average_rating_expr.label("average_rating"),
+            review_count_expr.label("review_count"),
         )
         .outerjoin(sales_subquery, sales_subquery.c.id_produto == Produto.id_produto)
         .outerjoin(reviews_subquery, reviews_subquery.c.id_produto == Produto.id_produto)
@@ -117,6 +123,15 @@ def listar_produtos(
 
     if filters:
         paged_query = paged_query.filter(*filters)
+
+    if sort_sales == "asc":
+        paged_query = paged_query.order_by(asc(sales_count_expr), desc(review_count_expr), asc(Produto.nome_produto))
+    elif sort_sales == "desc":
+        paged_query = paged_query.order_by(desc(sales_count_expr), desc(review_count_expr), asc(Produto.nome_produto))
+    elif sort_rating == "asc":
+        paged_query = paged_query.order_by(asc(average_rating_expr), desc(review_count_expr), asc(Produto.nome_produto))
+    elif sort_rating == "desc":
+        paged_query = paged_query.order_by(desc(average_rating_expr), desc(review_count_expr), asc(Produto.nome_produto))
 
     rows = paged_query.offset((page - 1) * page_size).limit(page_size).all()
 
