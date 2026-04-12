@@ -293,6 +293,7 @@ def deletar_produto(id_produto: str, db: Session = Depends(get_db)):
             detail="Produto não encontrado",
         )
 
+    db.query(ItemPedido).filter(ItemPedido.id_produto == id_produto).delete(synchronize_session=False)
     db.delete(produto)
     try:
         db.commit()
@@ -300,7 +301,7 @@ def deletar_produto(id_produto: str, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Não é possível excluir este produto porque existem itens de pedido associados",
+            detail="Não foi possível excluir este produto devido a vínculos existentes",
         )
 
     return None
