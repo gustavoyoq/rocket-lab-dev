@@ -1,0 +1,138 @@
+import type { ReactNode } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { useProductDetails } from '../../hooks/useProductDetails'
+import { getCategoryLabel } from '../../lib/category'
+
+function formatValue(value: number | null | undefined, suffix = '') {
+  if (value === null || value === undefined) {
+    return 'N/A'
+  }
+
+  return `${value}${suffix}`
+}
+
+function formatRating(value: number) {
+  if (value === 0) {
+    return 'Sem avaliação'
+  }
+
+  return value.toFixed(1)
+}
+
+export function ProductDetails() {
+  const { productId } = useParams<{ productId: string }>()
+  const { product, reviews, loading, error } = useProductDetails(productId)
+
+  if (loading) {
+    return <StateBox>Carregando detalhes do produto...</StateBox>
+  }
+
+  if (error || !product) {
+    return (
+      <StateBox variant="error">
+        <p>{error ?? 'Produto nao encontrado.'}</p>
+        <Link
+          to="/"
+          className="inline-flex items-center justify-center rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-200"
+        >
+          Voltar para o catálogo
+        </Link>
+      </StateBox>
+    )
+  }
+
+  return (
+    <section className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <Link className="text-sm font-medium text-slate-600 transition hover:text-slate-900" to="/">
+          ← Voltar para o catálogo
+        </Link>
+        <span className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200">
+          {product.salesCount} vendas
+        </span>
+      </div>
+
+      <article className="overflow-hidden rounded-4xl bg-white shadow-xl ring-1 ring-slate-200">
+        <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="min-h-112 bg-slate-100">
+            {product.imagem_url ? (
+              <img src={product.imagem_url} alt={product.nome_produto} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full min-h-112 items-center justify-center bg-linear-to-br from-slate-200 to-slate-100 text-lg font-semibold text-slate-500">
+                Sem imagem disponível
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col justify-between gap-6 p-6 lg:p-8">
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#6b8f4a]">{getCategoryLabel(product.categoria_produto)}</p>
+                <h2 className="mt-2 text-3xl font-semibold text-slate-900">{product.nome_produto}</h2>
+              </div>
+
+              <div className="grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
+                <InfoItem label="Vendas" value={`${product.salesCount}`} />
+                <InfoItem label="Avaliação média" value={formatRating(product.averageRating)} />
+                <InfoItem label="Peso" value={formatValue(product.peso_produto_gramas, ' g')} />
+                <InfoItem label="Comprimento" value={formatValue(product.comprimento_centimetros, ' cm')} />
+                <InfoItem label="Altura" value={formatValue(product.altura_centimetros, ' cm')} />
+                <InfoItem label="Largura" value={formatValue(product.largura_centimetros, ' cm')} />
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-slate-50 p-4 ring-1 ring-slate-200">
+              <p className="text-sm font-semibold text-slate-900">Média das avaliações</p>
+              <p className="mt-1 text-3xl font-bold text-[#6b8f4a]">{formatRating(product.averageRating)}</p>
+              <p className="text-sm text-slate-500">Baseado em {product.reviewCount} avaliações relacionadas</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-200 p-6 lg:p-8">
+          <div className="flex items-center justify-between gap-4">
+            <h3 className="text-xl font-semibold text-slate-900">Avaliações do produto</h3>
+            <span className="text-sm text-slate-500">{product.reviewCount} comentários associados</span>
+          </div>
+
+          {reviews.length === 0 ? (
+            <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+              Nenhuma avaliação relacionada encontrada para este produto.
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {reviews.map((review) => (
+                <article key={review.id_avaliacao} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                  <p className="text-sm font-semibold text-[#6b8f4a]">Nota: {review.avaliacao}</p>
+                  <h4 className="mt-2 text-base font-semibold text-slate-900">{review.titulo_comentario ?? 'Sem título'}</h4>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{review.comentario ?? 'Sem comentário'}</p>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </article>
+    </section>
+  )
+}
+
+function InfoItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
+      <p className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</p>
+      <p className="mt-1 font-semibold text-slate-900">{value}</p>
+    </div>
+  )
+}
+
+function StateBox({ children, variant = 'default' }: { children: ReactNode; variant?: 'default' | 'error' }) {
+  return (
+    <div
+      className={`flex min-h-[60vh] flex-col items-center justify-center gap-4 rounded-3xl border px-6 py-10 text-center shadow-sm ${
+        variant === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white text-slate-700'
+      }`}
+    >
+      {children}
+    </div>
+  )
+}
