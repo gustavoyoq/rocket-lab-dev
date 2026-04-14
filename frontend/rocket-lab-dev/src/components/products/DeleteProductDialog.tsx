@@ -18,7 +18,7 @@ export function DeleteProductDialog({ productName, onClose, onDelete }: DeletePr
       actionsClassName="border-t-0"
       actions={
         <>
-          <Button variant="secondary" onClick={onClose} type="button">
+          <Button variant="secondary" onClick={onClose} type="button" className="bg-slate-200! text-slate-800! hover:bg-slate-300!">
             Cancelar
           </Button>
           <Button variant="danger" onClick={onDelete} type="button">

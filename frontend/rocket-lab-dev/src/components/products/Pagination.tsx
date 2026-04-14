@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 import { Button } from '../ui/Button'
-import { Input } from '../ui/Input'
 
 interface PaginationProps {
   currentPage: number
@@ -12,75 +12,66 @@ interface PaginationProps {
 
 export function Pagination({ currentPage, totalPages, onPrevious, onNext, onGoToPage }: PaginationProps) {
   const [pageInput, setPageInput] = useState(String(currentPage))
-  const [isPagePickerOpen, setIsPagePickerOpen] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setPageInput(String(currentPage))
   }, [currentPage])
 
-  useEffect(() => {
-    if (isPagePickerOpen) {
-      inputRef.current?.focus()
-      inputRef.current?.select()
-    }
-  }, [isPagePickerOpen])
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
+  function commitPageInput() {
     const pageNumber = Number(pageInput)
     if (!Number.isFinite(pageNumber)) {
+      setPageInput(String(currentPage))
       return
     }
 
     const nextPage = Math.min(Math.max(1, Math.trunc(pageNumber)), totalPages)
+    setPageInput(String(nextPage))
     onGoToPage(nextPage)
-    setIsPagePickerOpen(false)
   }
 
   return (
-    <div className="mt-6 space-y-4">
+    <div className="mt-6">
       <div className="flex items-center justify-center gap-3">
-        <Button variant="secondary" onClick={onPrevious} disabled={currentPage <= 1} aria-label="Pagina anterior">
-          ←
-        </Button>
-        <button
-          type="button"
-          onClick={() => setIsPagePickerOpen((current) => !current)}
-          aria-label="Abrir seletor de página"
-          className="min-w-12 rounded-full bg-[#b5e48c] px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-[#99d98c] transition hover:bg-[#99d98c]"
+        <Button
+          variant="secondary"
+          onClick={onPrevious}
+          disabled={currentPage <= 1}
+          aria-label="Pagina anterior"
+          className="cursor-pointer disabled:cursor-not-allowed"
         >
-          {currentPage} / {totalPages}
-        </button>
-        <Button variant="secondary" onClick={onNext} disabled={currentPage >= totalPages} aria-label="Proxima pagina">
-          →
+          <FaAngleLeft aria-hidden="true" />
+        </Button>
+
+        <div className="inline-flex items-center gap-2 rounded-full bg-[#a4ef8e] px-3 py-2 text-sm font-semibold text-slate-800 ring-1 ring-[#99d98c]">
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            value={pageInput}
+            onChange={(event) => setPageInput(event.target.value)}
+            onBlur={commitPageInput}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                commitPageInput()
+              }
+            }}
+            aria-label="Página atual"
+            className="w-14 bg-transparent text-center text-sm font-semibold text-slate-800 outline-none"
+          />
+          <span className="text-slate-700">/ {totalPages}</span>
+        </div>
+
+        <Button
+          variant="secondary"
+          onClick={onNext}
+          disabled={currentPage >= totalPages}
+          aria-label="Proxima pagina"
+          className="cursor-pointer disabled:cursor-not-allowed"
+        >
+          <FaAngleRight aria-hidden="true" />
         </Button>
       </div>
-
-      {isPagePickerOpen ? (
-        <form
-          onSubmit={handleSubmit}
-          className="mx-auto flex max-w-md flex-col gap-3 rounded-3xl bg-[#b5e48c] px-4 py-4 ring-1 ring-[#99d98c] sm:flex-row sm:items-center"
-        >
-          <label className="flex-1 text-sm font-medium text-slate-700">
-            Ir para página
-            <Input
-              ref={inputRef}
-              type="number"
-              min={1}
-              max={totalPages}
-              value={pageInput}
-              onChange={(event) => setPageInput(event.target.value)}
-              className="mt-2"
-              aria-label="Ir para página específica"
-            />
-          </label>
-          <Button type="submit" variant="secondary" className="sm:self-end">
-            Ir
-          </Button>
-        </form>
-      ) : null}
     </div>
   )
 }

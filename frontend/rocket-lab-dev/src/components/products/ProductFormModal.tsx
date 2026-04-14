@@ -50,7 +50,7 @@ export function ProductFormModal({
       onClose={onClose}
       actions={
         <>
-          <Button variant="secondary" onClick={onClose} type="button">
+          <Button variant="secondary" onClick={onClose} type="button" className="bg-slate-200! text-slate-800! hover:bg-slate-300!">
             {onCancelLabel}
           </Button>
           <Button type="submit" form="product-form" disabled={submitting}>

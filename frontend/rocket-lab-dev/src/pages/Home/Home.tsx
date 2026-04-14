@@ -92,8 +92,7 @@ export function Home() {
   return (
     <section className="space-y-6">
       <div className="space-y-2 pt-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#6b8f4a]">Catálogo Pack-It</p>
-        <h2 className="text-3xl font-semibold text-slate-900">Produtos em destaque</h2>
+        <h2 className="text-3xl font-semibold text-slate-900">Catálogo de produtos</h2>
         <p className="max-w-3xl text-sm text-slate-600">
           Navegue, filtre, edite e acompanhe métricas dos produtos do catálogo.
         </p>
@@ -186,7 +185,7 @@ function StateBox({ children, variant = 'default' }: { children: ReactNode; vari
   return (
     <div
       className={`flex min-h-56 flex-col items-center justify-center gap-4 rounded-3xl border px-6 py-10 text-center ${
-        variant === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-[#99d98c] bg-[#b5e48c] text-slate-800'
+        variant === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-[#99d98c] bg-[#a4ef8e] text-slate-800'
       }`}
     >
       {children}

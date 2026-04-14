@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { MdOutlineMoveToInbox, MdOutlineSearch } from 'react-icons/md'
+import { IoFilterSharp } from 'react-icons/io5'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
@@ -36,23 +38,29 @@ export function ProductToolbar({
   })
 
   return (
-    <div className="flex flex-col gap-3 rounded-3xl bg-[#b5e48c] p-4 ring-1 ring-[#99d98c] sm:p-5 lg:flex-row lg:items-center">
+    <div className="flex flex-col gap-3 rounded-3xl bg-[#a4ef8e] p-4 sm:p-5 lg:flex-row lg:items-center">
       <div className="flex-1">
-        <Input
-          value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Pesquisar produto pelo nome"
-          aria-label="Pesquisar produto"
-        />
+        <div className="flex items-center gap-2">
+          <MdOutlineSearch aria-hidden="true" className="text-3xl text-[#3f6f2c]" />
+          <Input
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Pesquisar produto pelo nome"
+            aria-label="Pesquisar produto"
+          />
+        </div>
       </div>
 
       <div className="relative">
         <Button variant="secondary" onClick={() => setIsFilterMenuOpen((current) => !current)}>
-          Filtros
+          <span className="inline-flex items-center gap-2">
+            <IoFilterSharp aria-hidden="true" />
+            Filtros
+          </span>
         </Button>
 
         {isFilterMenuOpen ? (
-          <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-[#99d98c] bg-[#b5e48c] p-4 ring-1 ring-[#99d98c]">
+          <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-[#99d98c] bg-[#a4ef8e] p-4 ring-1 ring-[#99d98c]">
             <div className="space-y-3">
               <div>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#6b8f4a]">Categoria</p>
@@ -89,7 +97,12 @@ export function ProductToolbar({
       </div>
 
       <div className="lg:ml-auto">
-        <Button onClick={onAddProduct}>Adicionar produto</Button>
+        <Button onClick={onAddProduct}>
+          <span className="inline-flex items-center gap-2">
+            <MdOutlineMoveToInbox aria-hidden="true" />
+            Adicionar produto
+          </span>
+        </Button>
       </div>
     </div>
   )

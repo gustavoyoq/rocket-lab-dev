@@ -200,6 +200,12 @@ def get_product_details(id_produto: str, db: Session = Depends(get_db)):
         or (0.0, 0)
     )
 
+    estimated_price_brl = (
+        db.query(func.avg(ItemPedido.preco_BRL))
+        .filter(ItemPedido.id_produto == id_produto)
+        .scalar()
+    )
+
     return {
         "id_produto": product.id_produto,
         "nome_produto": product.nome_produto,
@@ -212,6 +218,7 @@ def get_product_details(id_produto: str, db: Session = Depends(get_db)):
         "sales_count": int(sales_count or 0),
         "average_rating": float(average_rating or 0.0),
         "review_count": int(review_count or 0),
+        "estimated_price_brl": float(estimated_price_brl) if estimated_price_brl is not None else None,
     }
 
 

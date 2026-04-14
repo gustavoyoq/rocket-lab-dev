@@ -6,7 +6,7 @@ import { ProductDetails } from './pages/ProductDetails/ProductDetails'
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-[#E7F4B9] text-slate-900">
+      <div className="min-h-screen bg-[#f1ffe6] text-slate-900">
         <AppHeader />
         <main className="w-full px-[12vw] pb-14 pt-24">
           <Routes>

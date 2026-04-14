@@ -62,6 +62,7 @@ export async function getProductDetailsById(productId: string): Promise<ProductL
     salesCount: response.data.sales_count,
     averageRating: response.data.average_rating,
     reviewCount: response.data.review_count,
+    estimatedPriceBrl: response.data.estimated_price_brl,
   }
 }
 

@@ -53,6 +53,7 @@ export interface ProductListingItem extends Product {
   salesCount: number
   averageRating: number
   reviewCount: number
+  estimatedPriceBrl?: number | null
 }
 
 export interface ProductListApiItem extends Product {
@@ -81,6 +82,7 @@ export interface ProductDetailsApiResponse extends Product {
   sales_count: number
   average_rating: number
   review_count: number
+  estimated_price_brl: number | null
 }
 
 export interface ProductReviewsPaginationApiResponse {

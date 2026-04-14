@@ -53,6 +53,7 @@ class ProdutoDetalhesRead(ProdutoRead):
     sales_count: int = Field(..., ge=0)
     average_rating: float = Field(..., ge=0)
     review_count: int = Field(..., ge=0)
+    estimated_price_brl: Optional[float] = Field(None, ge=0)
 
 
 class ProdutoAvaliacaoItemRead(BaseModel):
